@@ -1,6 +1,6 @@
 {
   "name": "@tryorchard/sdk",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "TypeScript client for Orchard: drive iOS and Android sandboxes over REST and live WebSocket channels.",
   "license": "MIT",
   "author": "AirOverflow",
