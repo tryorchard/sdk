@@ -31,5 +31,3 @@ jobs:
           [ "$TAG" = "typescript-v$v" ] || { echo "tag $TAG != typescript-v$v"; exit 1; }
       - run: npm ci
       - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
