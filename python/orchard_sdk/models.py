@@ -2,17 +2,11 @@
 
 These mirror the TypeScript SDK types; the control plane is the source of truth,
 so they are intentionally permissive ``TypedDict``\\s (no runtime validation):
-a response is returned as-is and annotated for editor/mypy help. Fields that
-may be absent use ``NotRequired``.
+a response is returned as-is and annotated for editor/mypy help.
 """
 from __future__ import annotations
 
 from typing import Any, Literal, TypedDict
-
-try:
-    from typing import NotRequired
-except ImportError:  # Python 3.10
-    from typing_extensions import NotRequired  # type: ignore
 
 Platform = Literal["ios", "android"]
 Provider = Literal["vphone", "baguette", "android", "cuttlefish", "qemu", "e2b", "daytona", "modal"]
