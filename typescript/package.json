@@ -1,0 +1,46 @@
+{
+  "name": "@orchard/sdk",
+  "version": "0.0.1",
+  "description": "TypeScript client for Orchard: drive iOS and Android sandboxes over REST and live WebSocket channels.",
+  "license": "MIT",
+  "author": "AirOverflow",
+  "homepage": "https://github.com/tryorchard/sdk/tree/main/typescript#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tryorchard/sdk.git",
+    "directory": "typescript"
+  },
+  "bugs": { "url": "https://github.com/tryorchard/sdk/issues" },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "sideEffects": false,
+  "engines": { "node": ">=18" },
+  "publishConfig": { "access": "public" },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p examples",
+    "test": "vitest run",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "keywords": ["orchard", "android", "ios", "sandbox", "emulator", "automation", "frida"],
+  "peerDependencies": { "ws": "^8" },
+  "peerDependenciesMeta": { "ws": { "optional": true } },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/ws": "^8",
+    "tsup": "^8",
+    "typescript": "^5.7",
+    "vitest": "^2"
+  }
+}
