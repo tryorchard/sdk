@@ -28,4 +28,14 @@ Examples import `@orchard/sdk` by name, so build first, then run one with `node 
 
 ## Releasing
 
-Bump the version in `python/pyproject.toml`, `python/orchard_sdk/_version.py` and `typescript/package.json`, then publish each package.
+Each package releases independently from a tag; GitHub Actions tests, builds and publishes it.
+
+```bash
+# Python: bump python/pyproject.toml and python/orchard_sdk/_version.py, commit, then
+git tag python-v0.0.2 && git push origin python-v0.0.2
+
+# TypeScript: bump typescript/package.json (npm version 0.0.2 --no-git-tag-version), commit, then
+git tag typescript-v0.0.2 && git push origin typescript-v0.0.2
+```
+
+The workflow fails if the tag doesn't match the package version.

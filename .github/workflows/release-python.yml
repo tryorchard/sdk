@@ -1,0 +1,37 @@
+name: Release Python
+
+on:
+  push:
+    tags: ["python-v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check tag matches package version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          v=$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml","rb"))["project"]["version"])')
+          grep -qx "__version__ = \"$v\"" orchard_sdk/_version.py || { echo "_version.py != $v"; exit 1; }
+          [ "$TAG" = "python-v$v" ] || { echo "tag $TAG != python-v$v"; exit 1; }
+      - run: pip install -e ".[dev]"
+      - run: pytest
+      - run: python -m build
+      - run: twine check dist/*
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: python/dist
