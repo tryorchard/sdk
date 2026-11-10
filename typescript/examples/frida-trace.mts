@@ -1,6 +1,6 @@
 // Stream Activity.onResume calls from an Android app with frida.
 // Usage: node --experimental-strip-types examples/frida-trace.mts <selector> <package>
-import { Orchard } from "@orchard/sdk";
+import { Orchard } from "@tryorchard/sdk";
 
 const [selector, pkg] = process.argv.slice(2);
 if (!pkg) throw new Error("usage: frida-trace.mts <selector> <package>");

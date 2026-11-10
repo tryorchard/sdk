@@ -3,7 +3,7 @@
 import { writeFile } from "node:fs/promises";
 import { setTimeout as sleep } from "node:timers/promises";
 
-import { Orchard } from "@orchard/sdk";
+import { Orchard } from "@tryorchard/sdk";
 
 const [selector, pkg] = process.argv.slice(2);
 if (!pkg) throw new Error("usage: ui-test.mts <selector> <package>");

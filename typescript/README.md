@@ -1,9 +1,9 @@
-# @orchard/sdk
+# @tryorchard/sdk
 
 TypeScript/JavaScript client for [Orchard](https://docs.orchard.airoverflow.com): create and drive iOS and Android sandboxes, manage snapshots, templates, teams and scoped API keys, and stream live channels (logs, shell, screen, adb, VNC, mitm, frida). Ships ESM, CommonJS and type declarations; runs in Node 18+ and the browser.
 
 ```bash
-npm i @orchard/sdk
+npm i @tryorchard/sdk
 ```
 
 On Node < 21 (no global `WebSocket`) also install the optional peer for live channels: `npm i ws`.
@@ -12,7 +12,7 @@ On Node < 21 (no global `WebSocket`) also install the optional peer for live cha
 
 ```ts
 import { readFile, writeFile } from "node:fs/promises";
-import { Orchard } from "@orchard/sdk";
+import { Orchard } from "@tryorchard/sdk";
 
 const orchard = Orchard.fromEnv(); // ORCHARD_API_URL + ORCHARD_API_KEY
 // or: new Orchard({ url: "https://orchard.example.com", token: "orc_live_xxx" })
@@ -31,7 +31,7 @@ await writeFile("screen.png", await sb.screenshot());
 for await (const line of sb.logs()) console.log(line);
 ```
 
-CommonJS works too: `const { Orchard } = require("@orchard/sdk")`.
+CommonJS works too: `const { Orchard } = require("@tryorchard/sdk")`.
 
 ## Configuration
 
@@ -65,7 +65,7 @@ The same package works with the browser's `fetch` and `WebSocket`. An `orc_` key
 All errors extend `OrchardError`: `ApiError` (HTTP status + server detail), `SelectorError` (zero or ambiguous sandbox match), `ChannelClosedError` (WebSocket closed with 4401/4403/4404/4502).
 
 ```ts
-import { ApiError, SelectorError } from "@orchard/sdk";
+import { ApiError, SelectorError } from "@tryorchard/sdk";
 
 try {
   await (await orchard.sandbox("pixel")).start();

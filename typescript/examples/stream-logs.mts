@@ -1,5 +1,5 @@
 // Stream a sandbox's logs. Usage: node --experimental-strip-types examples/stream-logs.mts <selector>
-import { Orchard } from "@orchard/sdk";
+import { Orchard } from "@tryorchard/sdk";
 
 const [selector] = process.argv.slice(2);
 if (!selector) throw new Error("usage: stream-logs.mts <selector>");

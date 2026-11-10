@@ -1,5 +1,5 @@
 {
-  "name": "@orchard/sdk",
+  "name": "@tryorchard/sdk",
   "version": "0.0.1",
   "description": "TypeScript client for Orchard: drive iOS and Android sandboxes over REST and live WebSocket channels.",
   "license": "MIT",

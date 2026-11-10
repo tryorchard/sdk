@@ -1,5 +1,5 @@
 // List sandboxes. Usage: node --experimental-strip-types examples/quickstart.mts
-import { Orchard } from "@orchard/sdk";
+import { Orchard } from "@tryorchard/sdk";
 
 const orchard = Orchard.fromEnv();
 

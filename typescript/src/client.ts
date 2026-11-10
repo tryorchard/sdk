@@ -8,7 +8,7 @@ import { Sandbox, Sandboxes } from "./resources/sandboxes.js";
  * A client for an Orchard control plane.
  *
  * ```ts
- * import { Orchard } from "@orchard/sdk";
+ * import { Orchard } from "@tryorchard/sdk";
  *
  * const orchard = new Orchard({ url: "https://orchard.example.com", token: "orc_…" });
  * const { instances } = await orchard.sandboxes.list();

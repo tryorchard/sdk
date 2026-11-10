@@ -1,7 +1,7 @@
-# @orchard/sdk — API reference
+# @tryorchard/sdk — API reference
 
 ```bash
-npm i @orchard/sdk
+npm i @tryorchard/sdk
 ```
 
 Node ≥ 18 or any modern browser. On Node < 21 (no global `WebSocket`) also install the optional peer `ws` (`npm i ws`) to use live channels.
@@ -9,7 +9,7 @@ Node ≥ 18 or any modern browser. On Node < 21 (no global `WebSocket`) also ins
 Every example below assumes:
 
 ```ts
-import { Orchard } from "@orchard/sdk";
+import { Orchard } from "@tryorchard/sdk";
 
 const orchard = Orchard.fromEnv();
 const sb = await orchard.sandbox("my-pixel");
@@ -1251,7 +1251,7 @@ Precedence: exact uuid, uuid prefix, exact `name`/`display_name`, then `tag`. Th
 Exactly one match, or throw `SelectorError`.
 
 ```ts
-import { resolve } from "@orchard/sdk";
+import { resolve } from "@tryorchard/sdk";
 
 const { instances } = await orchard.sandboxes.list();
 const inst = resolve(instances, "my-pixel");
@@ -1262,7 +1262,7 @@ const inst = resolve(instances, "my-pixel");
 Every match in the first tier that hits.
 
 ```ts
-import { resolveAll } from "@orchard/sdk";
+import { resolveAll } from "@tryorchard/sdk";
 
 const tagged = resolveAll(instances, "payments");
 ```
@@ -1285,7 +1285,7 @@ All extend `OrchardError`.
 | `4502` | upstream agent unreachable |
 
 ```ts
-import { ApiError, SelectorError } from "@orchard/sdk";
+import { ApiError, SelectorError } from "@tryorchard/sdk";
 
 try {
   await (await orchard.sandbox("my-pixel")).start();
@@ -1297,7 +1297,7 @@ try {
 ```
 
 ```ts
-import { ChannelClosedError } from "@orchard/sdk";
+import { ChannelClosedError } from "@tryorchard/sdk";
 
 try {
   for await (const line of sb.shell()) console.log(line);

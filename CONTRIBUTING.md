@@ -24,7 +24,7 @@ npm test
 npm run build       # ESM + CJS + .d.ts into dist/
 ```
 
-Examples import `@orchard/sdk` by name, so build first, then run one with `node --experimental-strip-types examples/quickstart.mts`.
+Examples import `@tryorchard/sdk` by name, so build first, then run one with `node --experimental-strip-types examples/quickstart.mts`.
 
 ## Releasing
 

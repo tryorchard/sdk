@@ -1,9 +1,9 @@
-# orchardsdk
+# tryorchard-sdk
 
 Python client for [Orchard](https://docs.orchard.airoverflow.com): create and drive iOS and Android sandboxes, manage snapshots, templates, teams and scoped API keys, and stream live channels (logs, shell, screen, adb, VNC, mitm, frida).
 
 ```bash
-pip install orchardsdk
+pip install tryorchard-sdk
 ```
 
 Requires Python 3.10+. The import name is `orchard_sdk`.

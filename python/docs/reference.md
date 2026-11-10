@@ -1,10 +1,10 @@
 # Python SDK reference
 
 ```bash
-pip install orchardsdk
+pip install tryorchard-sdk
 ```
 
-The distribution is `orchardsdk`; the import name is `orchard_sdk`.
+The distribution is `tryorchard-sdk`; the import name is `orchard_sdk`.
 
 Every snippet below assumes:
 

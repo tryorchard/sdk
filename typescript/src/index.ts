@@ -3,7 +3,7 @@
  * control plane. Works in Node (≥18) and the browser.
  *
  * ```ts
- * import { Orchard } from "@orchard/sdk";
+ * import { Orchard } from "@tryorchard/sdk";
  * const orchard = Orchard.fromEnv();            // ORCHARD_API_URL + ORCHARD_API_KEY
  * for (const s of (await orchard.sandboxes.list()).instances) console.log(s.name, s.state);
  * ```

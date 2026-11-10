@@ -3,7 +3,7 @@
 // Usage: node --experimental-strip-types examples/capture-traffic.mts <selector>
 import { writeFile } from "node:fs/promises";
 
-import { Orchard } from "@orchard/sdk";
+import { Orchard } from "@tryorchard/sdk";
 
 const [selector] = process.argv.slice(2);
 if (!selector) throw new Error("usage: capture-traffic.mts <selector>");

@@ -1,5 +1,5 @@
 [project]
-name = "orchardsdk"
+name = "tryorchard-sdk"
 version = "0.0.1"
 description = "Python client for Orchard: drive iOS and Android sandboxes over REST and live WebSocket channels."
 requires-python = ">=3.10"

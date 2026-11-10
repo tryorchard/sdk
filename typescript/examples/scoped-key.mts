@@ -1,6 +1,6 @@
 // Mint a 30-day key that can only read logs and files of one sandbox.
 // Usage: node --experimental-strip-types examples/scoped-key.mts <selector>
-import { Orchard } from "@orchard/sdk";
+import { Orchard } from "@tryorchard/sdk";
 
 const [selector] = process.argv.slice(2);
 if (!selector) throw new Error("usage: scoped-key.mts <selector>");
