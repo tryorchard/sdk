@@ -359,6 +359,19 @@ Disk-usage breakdown.
 console.log(await sb.storage());
 ```
 
+#### `sb.exportAvd(destPath: string, opts?: { timeoutMs?: number }): Promise<Record<string, unknown>>`
+
+**Node only.** Export this Android sandbox's AVD as a portable profile `.tar` to
+`destPath`, for sharing or for `templates.importAvd()` onto another node. **Stop
+the device first.** Resolves to the profile metadata (`filename`, `size_bytes`,
+`system_image`, …) plus `savedTo` and `bytes`.
+
+```ts
+await sb.stop();
+const meta = await sb.exportAvd("golden-pixel.tar");
+console.log(meta.system_image, meta.bytes);
+```
+
 ### Live channels
 
 Each returns a [`Channel`](#channel). Iterate with `for await`; breaking out closes the socket.
@@ -772,6 +785,20 @@ await orchard.templates.launch(12, "ci-run-481");
 ```ts
 const t = (await orchard.templates.list()).find((t) => t.name === "pixel-baseline")!;
 await orchard.templates.launch(t.id, "ci-run-482", { cpu: 4 });
+```
+
+### `templates.importAvd(path: string, name: string, opts: { node: string; provider?: string; installImage?: boolean; timeoutMs?: number }): Promise<SnapshotRow>`
+
+**Node only.** Import a portable AVD profile `.tar` (from `sb.exportAvd()`) onto
+`opts.node` as a new, launchable template. The file is streamed **directly from
+this machine to the node** — the control plane only authorizes and records it, so
+a multi-GB profile is never buffered in the backend. This machine must be able to
+reach the node's agent. Set `installImage: true` to fetch the base system image
+if the node is missing it.
+
+```ts
+const row = await orchard.templates.importAvd("golden-pixel.tar", "Golden Pixel", { node: "mac-ios" });
+await orchard.templates.launch(row.id, "from-golden");
 ```
 
 ## orchard.catalog

@@ -165,6 +165,21 @@ class Sandbox:
         """Disk-usage breakdown (apps/media/system/free)."""
         return self._http.get(f"{self._base}/storage")
 
+    def export_avd(self, dest: str | Path, *, timeout: float = 7200.0) -> dict[str, Any]:
+        """Export this Android sandbox's AVD as a portable profile ``.tar`` to ``dest``,
+        for sharing or for :meth:`Templates.import_avd` onto another node. **Stop the
+        device first** (a profile is copied at rest). The profile holds the disk images
+        and a manifest naming the system image it needs — not the base image itself.
+
+        Returns the profile metadata (``filename``, ``size_bytes``, ``system_image``, …)
+        plus ``saved_to`` and ``bytes``.
+        """
+        dest = Path(dest)
+        meta = self._http.post(f"{self._base}/avd/export")
+        got = self._http.stream_to_file(
+            f"{self._base}/avd/export/{meta['filename']}", dest, timeout=timeout)
+        return {**meta, "saved_to": str(dest), "bytes": got}
+
     # -- live channels (context-managed sync iterators) ------------------
     def logs(self, *, follow: bool = True) -> SyncChannel:
         """Stream logs. ``with sb.logs() as s: for line in s: ...``"""

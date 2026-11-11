@@ -62,6 +62,28 @@ export class Templates {
   launch(pk: number, name: string, spec: Record<string, unknown> = {}): Promise<unknown> {
     return this.http.post(`/templates/${pk}/launch`, { name, ...spec });
   }
+
+  /** Import a portable AVD profile `.tar` (from {@link Sandbox.exportAvd}) onto `node`
+   * as a new, launchable template (Node only). The file is streamed **directly from
+   * this machine to the node** — the control plane only authorizes and records it, so
+   * a multi-GB profile is never buffered in the backend. This machine must be able to
+   * reach the node's agent. Set `installImage` to fetch the base system image if the
+   * node is missing it. Resolves to the created template row. */
+  async importAvd(
+    path: string,
+    name: string,
+    opts: { node: string; provider?: string; installImage?: boolean; timeoutMs?: number },
+  ): Promise<SnapshotRow> {
+    const provider = opts.provider ?? "android";
+    const grant = await this.http.post<{
+      agent_url: string; agent_token: string; template_id: string; upload_path: string;
+    }>(`/nodes/${opts.node}/templates/import/begin`,
+      { name, provider, install_image: opts.installImage ?? false });
+    await this.http.streamFileTo(grant.agent_url, grant.upload_path, grant.agent_token,
+                                 path, opts.timeoutMs);
+    return this.http.post<SnapshotRow>(`/nodes/${opts.node}/templates/import/commit`,
+      { template_id: grant.template_id, provider, name });
+  }
 }
 
 /** `orchard.catalog` — what can be launched. */

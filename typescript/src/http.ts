@@ -102,4 +102,51 @@ export class Http {
     if (resp.status >= 400) throw new ApiError(resp.status, await detail(resp));
     return new Uint8Array(await resp.arrayBuffer());
   }
+
+  /** Stream an authed endpoint straight to a file on disk (Node only) — for large
+   * downloads like an AVD profile. Returns the number of bytes written. */
+  async streamToFile(path: string, destPath: string, timeoutMs = 7_200_000): Promise<number> {
+    const { createWriteStream } = await import("node:fs");
+    const { Readable } = await import("node:stream");
+    const { pipeline } = await import("node:stream/promises");
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const resp = await fetch(this.url(path), { headers: this.headers, signal: ctrl.signal });
+      if (resp.status >= 400) throw new ApiError(resp.status, await detail(resp));
+      if (!resp.body) throw new ApiError(502, "empty response body");
+      let total = 0;
+      const counter = new TransformStream<Uint8Array, Uint8Array>({
+        transform(chunk, controller) { total += chunk.byteLength; controller.enqueue(chunk); },
+      });
+      await pipeline(Readable.fromWeb(resp.body.pipeThrough(counter) as never),
+                     createWriteStream(destPath));
+      return total;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  /** Stream a file as a raw body straight to a node agent (Node only, not the control
+   * plane) — for direct multi-GB uploads. Returns the agent's JSON response. */
+  async streamFileTo<T>(baseUrl: string, path: string, token: string,
+                        srcPath: string, timeoutMs = 7_200_000): Promise<T> {
+    const { createReadStream } = await import("node:fs");
+    const { Readable } = await import("node:stream");
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const resp = await fetch(baseUrl.replace(/\/+$/, "") + path, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/octet-stream" },
+        body: Readable.toWeb(createReadStream(srcPath)) as never,
+        duplex: "half", signal: ctrl.signal,
+      } as RequestInit & { duplex: "half" });
+      if (resp.status >= 400) throw new ApiError(resp.status, await detail(resp));
+      const text = await resp.text();
+      return (text ? JSON.parse(text) : undefined) as T;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
 }

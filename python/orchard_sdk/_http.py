@@ -83,6 +83,40 @@ class HttpClient:
             for _, (_, fh) in handles:
                 fh.close()
 
+    def stream_to_file(self, path: str, dest: Path, timeout: float = 7200.0) -> int:
+        """Stream an authed endpoint (relative path) to a file, for large downloads
+        like an AVD profile. Returns the number of bytes written."""
+        total = 0
+        with self._c.stream("GET", path, timeout=timeout) as r:
+            if r.status_code >= 400:
+                r.read()
+                raise ApiError(r.status_code, _detail(r))
+            with dest.open("wb") as fh:
+                for chunk in r.iter_bytes(1 << 20):
+                    fh.write(chunk)
+                    total += len(chunk)
+        return total
+
+    def stream_file_to(self, base_url: str, path: str, token: str, source: Path,
+                       timeout: float = 7200.0) -> Any:
+        """Stream a file as a raw body straight to a node agent (not the control plane),
+        chunked so nothing is buffered. For direct multi-GB AVD uploads."""
+        size = source.stat().st_size
+
+        def chunks() -> Any:
+            with source.open("rb") as fh:
+                while data := fh.read(1 << 20):
+                    yield data
+
+        with httpx.Client(timeout=httpx.Timeout(timeout, connect=10)) as c:
+            r = c.post(f"{base_url.rstrip('/')}{path}", content=chunks(),
+                       headers={"Authorization": f"Bearer {token}",
+                                "Content-Type": "application/octet-stream",
+                                "Content-Length": str(size)})
+            if r.status_code >= 400:
+                raise ApiError(r.status_code, _detail(r))
+            return r.json()
+
     def download(self, absolute_url: str, dest: Path) -> int:
         """Stream a signed-grant URL (full URL incl. ``?token=``) to a file.
 

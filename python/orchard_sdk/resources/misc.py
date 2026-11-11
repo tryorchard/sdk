@@ -39,6 +39,31 @@ class Templates:
         """Launch a new sandbox from a template."""
         return self._http.post(f"/templates/{pk}/launch", json={"name": name, **spec})
 
+    def import_avd(self, path: "str | Path", name: str, *, node: str,
+                   provider: str = "android", install_image: bool = False,
+                   timeout: float = 7200.0) -> dict[str, Any]:
+        """Import a portable AVD profile ``.tar`` (from :meth:`Sandbox.export_avd`) onto
+        ``node`` as a new, launchable template.
+
+        The file is streamed **directly from this machine to the node** — the control
+        plane only authorizes the upload and records the result, so a multi-GB profile
+        never passes through (or is buffered by) the backend. This machine must be able
+        to reach the node's agent. Set ``install_image`` to have the node download the
+        base system image if it is missing.
+
+        Returns the created template row (with the node's authoritative metadata).
+        """
+        from pathlib import Path
+        p = Path(path)
+        grant = self._http.post(f"/nodes/{node}/templates/import/begin",
+                                json={"name": name, "provider": provider,
+                                      "install_image": install_image})
+        self._http.stream_file_to(grant["agent_url"], grant["upload_path"],
+                                  grant["agent_token"], p, timeout=timeout)
+        return self._http.post(f"/nodes/{node}/templates/import/commit",
+                               json={"template_id": grant["template_id"],
+                                     "provider": provider, "name": name})
+
 
 class Catalog:
     """``orchard.catalog`` — what can be launched (images, presets, device types)."""

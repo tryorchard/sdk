@@ -189,6 +189,17 @@ export class Sandbox {
     return this.http.get(`${this.base}/storage`);
   }
 
+  /** Export this Android sandbox's AVD as a portable profile `.tar` to `destPath`
+   * (Node only), for sharing or for {@link Templates.importAvd} onto another node.
+   * **Stop the device first.** Resolves to the profile metadata (`filename`,
+   * `size_bytes`, `system_image`, …) plus `savedTo` and `bytes`. */
+  async exportAvd(destPath: string, opts: { timeoutMs?: number } = {}): Promise<Record<string, unknown>> {
+    const meta = await this.http.post<Record<string, unknown>>(`${this.base}/avd/export`);
+    const bytes = await this.http.streamToFile(
+      `${this.base}/avd/export/${meta.filename}`, destPath, opts.timeoutMs);
+    return { ...meta, savedTo: destPath, bytes };
+  }
+
   // -- live channels --
   /** Stream logs: `for await (const line of sb.logs()) …`. */
   logs(): Channel<string> {

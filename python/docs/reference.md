@@ -412,6 +412,20 @@ Disk usage breakdown (apps, media, system, free).
 print(sb.storage())
 ```
 
+### `sb.export_avd(dest, *, timeout=7200.0)`
+
+Export this Android sandbox's AVD as a portable profile `.tar` to `dest`, for
+sharing or for `templates.import_avd()` onto another node. **Stop the device
+first.** The profile holds the disk images and a manifest naming the system
+image it needs — not the base image itself. Returns the profile metadata
+(`filename`, `size_bytes`, `system_image`, …) plus `saved_to` and `bytes`.
+
+```python
+sb.stop()
+meta = sb.export_avd("golden-pixel.tar")
+print(meta["system_image"], meta["bytes"])
+```
+
 ### Live channels
 
 Each returns a [`SyncChannel`](#channels): open it with `with`, iterate, optionally `send()`.
@@ -900,6 +914,20 @@ Delete a template.
 
 ```python
 orchard.templates.delete(12)
+```
+
+### `orchard.templates.import_avd(path, name, *, node, provider="android", install_image=False, timeout=7200.0)`
+
+Import a portable AVD profile `.tar` (from `sb.export_avd()`) onto `node` as a
+new, launchable template. The file is streamed **directly from this machine to
+the node** — the control plane only authorizes and records it, so a multi-GB
+profile is never buffered in the backend. This machine must be able to reach the
+node's agent. Set `install_image=True` to fetch the base system image if the node
+is missing it. Returns the created template row.
+
+```python
+row = orchard.templates.import_avd("golden-pixel.tar", "Golden Pixel", node="mac-ios")
+orchard.templates.launch(row["id"], "from-golden")
 ```
 
 ## Catalog
