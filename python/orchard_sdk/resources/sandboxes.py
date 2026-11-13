@@ -153,6 +153,20 @@ class Sandbox:
         """A PNG/JPEG screenshot (raw bytes)."""
         return self._http.get_content(f"{self._base}/screenshot")
 
+    def embed_token(self, *, ttl: int = 3600, input: bool = False,
+                    base: str = "") -> dict[str, Any]:
+        """Mint a short-lived, single-sandbox token for embedding this device's
+        live viewer in another site (an ``<iframe>`` or the JS component). The
+        browser holds only this token -- never your API key -- and it reaches
+        nothing but this sandbox's screen (and input, if ``input=True``).
+
+        ``ttl`` is seconds (60..86400); ``base`` is your Orchard UI origin, so the
+        returned ``url`` is absolute. Returns ``{token, url, uuid, org, workspace,
+        input, expires_at}`` -- hand ``url`` to an iframe, or ``token`` to the
+        ``@tryorchard/embed`` component."""
+        return self._http.post(f"{self._base}/embed-token",
+                               json={"ttl": int(ttl), "input": bool(input), "base": base})
+
     def describe_ui(self) -> dict[str, Any]:
         """The accessibility/UI tree."""
         return self._http.get(f"{self._base}/describe-ui")

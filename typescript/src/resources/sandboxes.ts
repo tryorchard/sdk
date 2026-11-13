@@ -177,6 +177,23 @@ export class Sandbox {
     return this.http.getBytes(`${this.base}/screenshot`);
   }
 
+  /**
+   * Mint a short-lived, single-sandbox token for embedding this device's live
+   * viewer in another site (an `<iframe>` or the `@tryorchard/embed` component).
+   * The browser holds only this token -- never your API key -- and it reaches
+   * nothing but this sandbox's screen (and input, if `input` is true).
+   *
+   * `ttl` is seconds (60..86400); `base` is your Orchard UI origin so the returned
+   * `url` is absolute. Resolves to `{token, url, uuid, org, workspace, input, expires_at}`.
+   */
+  embedToken(opts: { ttl?: number; input?: boolean; base?: string } = {}):
+    Promise<{ token: string; url: string; uuid: string; org: string;
+      workspace: string | null; input: boolean; expires_at: string }> {
+    return this.http.post(`${this.base}/embed-token`, {
+      ttl: opts.ttl ?? 3600, input: opts.input ?? false, base: opts.base ?? "",
+    }) as Promise<any>;
+  }
+
   describeUi(): Promise<unknown> {
     return this.http.get(`${this.base}/describe-ui`);
   }
