@@ -588,7 +588,7 @@ with sb.screen_bridge() as b:
 
 ### `sb.gdb_bridge(host="127.0.0.1", port=0)`
 
-A local listener bridged to the guest-kernel gdb stub. Cuttlefish debug sandboxes and iOS VMs (capability `kernel-debug`). On iOS it debugs the kernel at EL1 — connecting halts the whole device, so `continue`/`detach` to resume.
+A local listener bridged to the guest-kernel gdb stub. Cuttlefish debug sandboxes, Android emulators and iOS VMs launched with kernel debugging (capability `kernel-debug`). On iOS it debugs the kernel at EL1 — connecting halts the whole device, so `continue`/`detach` to resume.
 
 ```python
 with sb.gdb_bridge(port=1234) as b:

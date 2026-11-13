@@ -243,7 +243,8 @@ export class Sandbox {
   /**
    * Raw gdb-remote bytes to a sandbox's guest-kernel gdb stub. Bridge to a local
    * port, then `gdb-multiarch vmlinux` and `target remote` (or lldb). Cuttlefish
-   * debug sandboxes and iOS VMs (capability `kernel-debug`).
+   * debug sandboxes, Android emulators and iOS VMs launched with kernel debugging
+   * (capability `kernel-debug`).
    */
   gdb(): Channel<Uint8Array> {
     return new Channel(channelUrl(this.cfg, this.uuid, "gdb"), decodeBytes);

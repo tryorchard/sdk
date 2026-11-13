@@ -249,7 +249,8 @@ class Sandbox:
     def gdb_bridge(self, host: str = "127.0.0.1", port: int = 0) -> "LocalBridge":
         """A local listener bridged to a sandbox's guest-kernel gdb stub. Start it,
         then ``gdb-multiarch vmlinux`` and ``target remote <host>:<port>`` (or lldb).
-        Cuttlefish debug sandboxes and iOS VMs (capability ``kernel-debug``)."""
+        Cuttlefish debug sandboxes, Android emulators and iOS VMs launched with
+        kernel debugging (capability ``kernel-debug``)."""
         return LocalBridge(self._cfg, self.uuid, "gdb", host, port)
 
 

@@ -450,7 +450,7 @@ for await (const chunk of sb.vnc()) rfbClient.feed(chunk);
 
 #### `sb.gdb(): Channel<Uint8Array>`
 
-Raw gdb-remote bytes to the guest-kernel gdb stub. Cuttlefish debug sandboxes and iOS VMs (capability `kernel-debug`). On iOS it debugs the kernel at EL1 — connecting halts the whole device until `continue`/`detach`.
+Raw gdb-remote bytes to the guest-kernel gdb stub. Cuttlefish debug sandboxes, Android emulators and iOS VMs launched with kernel debugging (capability `kernel-debug`). On iOS it debugs the kernel at EL1 — connecting halts the whole device until `continue`/`detach`.
 
 ```ts
 const gdb = sb.gdb();
