@@ -104,6 +104,19 @@ class SnapshotRow(TypedDict, total=False):
     meta: dict[str, Any]
 
 
+class RecordingRow(TypedDict, total=False):
+    """A session recording's metadata, as returned by the ``recording/*`` endpoints."""
+    id: str
+    kind: str
+    key: str
+    status: str
+    started: float
+    duration: float
+    actions: int
+    video: bool
+    video_bytes: int
+
+
 class Job(TypedDict, total=False):
     id: str
     node: str

@@ -103,6 +103,32 @@ export interface SnapshotRow {
   meta: Record<string, unknown>;
 }
 
+/** A session recording's metadata (`meta.json`): a screen video plus a
+ * replayable input-action log. */
+export interface Recording {
+  id: string;
+  kind: string;
+  key: string;
+  status: "recording" | "done";
+  /** Unix epoch seconds when recording started. */
+  started: number;
+  /** Seconds captured so far. */
+  duration: number;
+  /** Number of logged input actions. */
+  actions: number;
+  video: boolean;
+  video_bytes: number;
+}
+
+/** One timestamped input event in a recording's action log (`t` is seconds
+ * since the recording started). */
+export type RecordedAction = { t: number } & (
+  | { tap: [number, number] }
+  | { swipe: number[]; ms: number }
+  | { text: string }
+  | { key: string }
+);
+
 /** A background job (image download, vm create). */
 export interface Job {
   id: string;

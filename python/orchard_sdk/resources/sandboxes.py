@@ -10,7 +10,7 @@ from .._bridge import LocalBridge
 from .._channels import SyncChannel, Tunnel
 from .._http import HttpClient
 from ..config import Config
-from ..models import Instance, InstanceList, SnapshotRow
+from ..models import Instance, InstanceList, RecordingRow, SnapshotRow
 from ..selector import resolve, resolve_all
 
 
@@ -152,6 +152,36 @@ class Sandbox:
     def screenshot(self) -> bytes:
         """A PNG/JPEG screenshot (raw bytes)."""
         return self._http.get_content(f"{self._base}/screenshot")
+
+    # -- session recording -----------------------------------------------
+    def record_start(self) -> RecordingRow:
+        """Start recording a session (screen video + a timestamped action log)."""
+        return self._http.post(f"{self._base}/recording/start")
+
+    def record_stop(self) -> RecordingRow:
+        """Stop the in-progress recording and return its final metadata."""
+        return self._http.post(f"{self._base}/recording/stop")
+
+    def recordings(self) -> List[RecordingRow]:
+        """List this sandbox's saved recordings."""
+        return self._http.get(f"{self._base}/recordings")["recordings"]
+
+    def recording_actions(self, rid: str) -> List[dict[str, Any]]:
+        """The timestamped input actions of recording ``rid``."""
+        return self._http.get(f"{self._base}/recordings/{rid}/actions")["actions"]
+
+    def recording_video(self, rid: str) -> bytes:
+        """Recording ``rid``'s screen capture as raw mp4 bytes."""
+        return self._http.get_content(f"{self._base}/recordings/{rid}/video")
+
+    def replay(self, rid: str, speed: float = 1.0) -> dict[str, Any]:
+        """Re-inject recording ``rid``'s actions onto the device at ``speed``x."""
+        return self._http.post(f"{self._base}/recordings/{rid}/replay",
+                               params={"speed": speed})
+
+    def delete_recording(self, rid: str) -> dict[str, Any]:
+        """Delete recording ``rid`` and its files."""
+        return self._http.delete(f"{self._base}/recordings/{rid}")
 
     def embed_token(self, *, ttl: int = 3600, input: bool = False,
                     base: str = "") -> dict[str, Any]:

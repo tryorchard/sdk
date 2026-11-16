@@ -1,7 +1,14 @@
 /** Sandboxes namespace + the {@link Sandbox} handle. @packageDocumentation */
 import type { ResolvedConfig } from "../config.js";
 import type { Http } from "../http.js";
-import type { ApiKey, Instance, InstanceList, SnapshotRow } from "../models.js";
+import type {
+  ApiKey,
+  Instance,
+  InstanceList,
+  RecordedAction,
+  Recording,
+  SnapshotRow,
+} from "../models.js";
 import { resolve, resolveAll } from "../selector.js";
 import {
   Channel,
@@ -175,6 +182,44 @@ export class Sandbox {
   /** A PNG/JPEG screenshot. */
   screenshot(): Promise<Uint8Array> {
     return this.http.getBytes(`${this.base}/screenshot`);
+  }
+
+  /** Start recording this session (screen video + a replayable input-action
+   * log). Resolves to the recording's metadata. */
+  recordStart(): Promise<Recording> {
+    return this.http.post<Recording>(`${this.base}/recording/start`);
+  }
+
+  /** Stop the in-progress recording. Resolves to its final metadata. */
+  recordStop(): Promise<Recording> {
+    return this.http.post<Recording>(`${this.base}/recording/stop`);
+  }
+
+  /** List this sandbox's recordings (newest first). */
+  async recordings(): Promise<Recording[]> {
+    return (await this.http.get<{ recordings: Recording[] }>(`${this.base}/recordings`)).recordings;
+  }
+
+  /** The timestamped input-action log for recording `rid`. */
+  async recordingActions(rid: string): Promise<RecordedAction[]> {
+    return (await this.http.get<{ id: string; actions: RecordedAction[] }>(
+      `${this.base}/recordings/${rid}/actions`)).actions;
+  }
+
+  /** Recording `rid`'s screen video as raw mp4 bytes. */
+  recordingVideo(rid: string): Promise<Uint8Array> {
+    return this.http.getBytes(`${this.base}/recordings/${rid}/video`);
+  }
+
+  /** Re-inject recording `rid`'s actions onto this (running) device. `speed` > 1
+   * replays faster. Resolves to `{id, replayed, of}`. */
+  replay(rid: string, speed = 1.0): Promise<{ id: string; replayed: number; of: number }> {
+    return this.http.post(`${this.base}/recordings/${rid}/replay?speed=${speed}`);
+  }
+
+  /** Delete recording `rid` (video + action log). */
+  deleteRecording(rid: string): Promise<unknown> {
+    return this.http.del(`${this.base}/recordings/${rid}`);
   }
 
   /**

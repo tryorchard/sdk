@@ -24,6 +24,8 @@ export type {
   LogLine,
   Platform,
   Provider,
+  RecordedAction,
+  Recording,
   SnapshotRow,
 } from "./models.js";
 export { Sandbox, Sandboxes, Files, Apps, Frida, Debugger, SandboxSnapshots } from "./resources/sandboxes.js";
