@@ -134,3 +134,38 @@ class Nodes:
     def delete(self, pk: int) -> None:
         """Remove a node."""
         self._http.delete(f"/nodes/{pk}")
+
+
+class Relay:
+    """``orchard.relay`` — physical device relays.
+
+    A device relay is a genuine phone holding an outbound socket to the control
+    plane; emulators relay their keymint attestation / Play-Integrity-token requests
+    to it (DroidGuard runs on the real device, which passes). Use this to see which
+    phones are connected and to verify one is relaying properly.
+    """
+
+    def __init__(self, http: HttpClient):
+        self._http = http
+
+    def devices(self) -> List[dict[str, Any]]:
+        """List physical device-relay nodes with live connection + capability status.
+
+        Each row: ``{id, name, connected, capabilities, state, last_heartbeat}``.
+        """
+        return (self._http.get("/nodes/relay/devices") or {}).get("devices", [])
+
+    def _resolve(self, device: "int | str") -> int:
+        if isinstance(device, int):
+            return device
+        for d in self.devices():
+            if device in (d["name"], str(d["id"])):
+                return d["id"]
+        raise ValueError(f"no relay device {device!r}")
+
+    def test(self, device: "int | str") -> dict[str, Any]:
+        """Force a relay round-trip to a device (by id or name) to verify it is
+        connected and relaying properly. Returns
+        ``{ok, connected, latency_ms, capabilities, detail}`` — never raises on a
+        down device, so it is safe to poll as a health check."""
+        return self._http.post(f"/nodes/{self._resolve(device)}/relay/test")

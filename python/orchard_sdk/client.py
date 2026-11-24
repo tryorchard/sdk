@@ -7,7 +7,7 @@ from . import config as _config
 from ._http import HttpClient
 from .config import Config
 from .resources.keys import Keys
-from .resources.misc import Catalog, Jobs, Nodes, Snapshots, Templates
+from .resources.misc import Catalog, Jobs, Nodes, Relay, Snapshots, Templates
 from .resources.remote import Remote
 from .resources.sandboxes import Sandbox, Sandboxes
 from .resources.team import Team, Workspaces
@@ -51,6 +51,8 @@ class Orchard:
         self.jobs = Jobs(self._http, self.config)
         #: Infrastructure nodes.
         self.nodes = Nodes(self._http)
+        #: Physical device relays (attestation / Play Integrity).
+        self.relay = Relay(self._http)
         #: Remote (cloud) sandboxes and credentials.
         self.remote = Remote(self._http, self.config)
 
