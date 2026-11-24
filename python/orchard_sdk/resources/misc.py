@@ -169,3 +169,14 @@ class Relay:
         ``{ok, connected, latency_ms, capabilities, detail}`` — never raises on a
         down device, so it is safe to poll as a health check."""
         return self._http.post(f"/nodes/{self._resolve(device)}/relay/test")
+
+    def enroll_token(self, name: str = "") -> dict[str, Any]:
+        """Mint a single-use enrollment token for your organization. Install the
+        orchard-node app on a phone and paste the returned ``token`` to bind that one
+        device to this org. Returns ``{token, hint, name, expires_at}`` — the token is
+        shown ONCE."""
+        return self._http.post("/nodes/relay/enroll-token", json={"name": name})
+
+    def enroll_tokens(self) -> List[dict[str, Any]]:
+        """List this org's enrollment tokens (hashes only; never the raw token)."""
+        return (self._http.get("/nodes/relay/enroll-token") or {}).get("tokens", [])
