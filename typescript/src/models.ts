@@ -84,6 +84,31 @@ export interface InstanceList {
   errors: { node: string; detail: string }[];
 }
 
+/**
+ * Android kernel-modularity options for {@link Sandboxes.create} /
+ * {@link Templates.launch}. All optional; they merge into the create body.
+ *
+ * `kernel`/`ramdisk` name files in the node kernel store (see {@link Nodes});
+ * `kernel_cmdline` is extra boot cmdline; `boot_props` are guest `ro.*`/`persist.*`
+ * props; `kernel_gdb` boots with a halted gdb stub (bridge with {@link Sandbox.gdb}).
+ */
+export interface KernelOptions {
+  rooted?: boolean;
+  kernel_gdb?: boolean;
+  kernel?: string;
+  ramdisk?: string;
+  kernel_cmdline?: string;
+  boot_props?: Record<string, string>;
+  device_profile?: string;
+  isolated?: boolean;
+}
+
+/** A kernel/ramdisk/vmlinux file in a node's kernel store. */
+export interface KernelFile {
+  name: string;
+  size: number;
+}
+
 /** A point-in-time snapshot or a template row. */
 export interface SnapshotRow {
   id: number;

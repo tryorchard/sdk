@@ -5,6 +5,7 @@ import type {
   ApiKey,
   Instance,
   InstanceList,
+  KernelOptions,
   RecordedAction,
   Recording,
   SnapshotRow,
@@ -37,9 +38,13 @@ export class Sandboxes {
     return this.http.get<InstanceList>("/instances");
   }
 
-  /** Create a sandbox (platform/name/cpu/memory_mb + platform fields). */
-  create(spec: Record<string, unknown>): Promise<Instance> {
-    return this.http.post<Instance>("/instances/create", spec);
+  /** Create a sandbox (platform/name/cpu/memory_mb + platform fields).
+   *
+   * `kernel` is a typed {@link KernelOptions} bag of Android kernel-modularity
+   * fields (`rooted`, `kernel`, `kernel_cmdline`, `kernel_gdb`, …) merged into the
+   * create body; the same keys may still be passed inline via `spec`. */
+  create(spec: Record<string, unknown>, kernel?: KernelOptions): Promise<Instance> {
+    return this.http.post<Instance>("/instances/create", { ...spec, ...kernel });
   }
 
   /** Create an iOS simulator sandbox (name/device_type/runtime). */
@@ -123,6 +128,12 @@ export class Sandbox {
   /** Set the tag (and optional `#rrggbb` chip colour). */
   tag(tag: string, color?: string): Promise<Instance> {
     return this.http.patch<Instance>(this.base, color ? { tag, tag_color: color } : { tag });
+  }
+
+  /** Set extra guest-kernel command-line `params` (stored on the sandbox, applied
+   * on the next boot — reboot to pick them up). */
+  setKernelParams(params: string): Promise<unknown> {
+    return this.http.post(`${this.base}/kernel`, { params });
   }
 
   /** Unified input action (tap/swipe/key/text/launch/tap_text). */

@@ -1,13 +1,14 @@
 """Smaller resource namespaces: snapshots, templates, catalog, jobs, nodes."""
 from __future__ import annotations
 
+from pathlib import Path
 from typing import List, Any
 
 from .. import _ws
 from .._channels import SyncChannel
 from .._http import HttpClient
 from ..config import Config
-from ..models import Job, SnapshotRow
+from ..models import Job, KernelFile, KernelOptions, SnapshotRow
 
 
 class Snapshots:
@@ -35,11 +36,15 @@ class Templates:
         """Delete a template by id."""
         self._http.delete(f"/templates/{pk}")
 
-    def launch(self, pk: int, name: str, **spec: Any) -> dict[str, Any]:
-        """Launch a new sandbox from a template."""
-        return self._http.post(f"/templates/{pk}/launch", json={"name": name, **spec})
+    def launch(self, pk: int, name: str, *, kernel_options: KernelOptions | None = None,
+               **spec: Any) -> dict[str, Any]:
+        """Launch a new sandbox from a template. ``kernel_options`` is a typed
+        :class:`~orchard_sdk.models.KernelOptions` bag of Android kernel-modularity
+        fields merged into the launch body (same keys may be passed inline)."""
+        return self._http.post(f"/templates/{pk}/launch",
+                               json={"name": name, **spec, **(kernel_options or {})})
 
-    def import_avd(self, path: "str | Path", name: str, *, node: str,
+    def import_avd(self, path: str | Path, name: str, *, node: str,
                    provider: str = "android", install_image: bool = False,
                    timeout: float = 7200.0) -> dict[str, Any]:
         """Import a portable AVD profile ``.tar`` (from :meth:`Sandbox.export_avd`) onto
@@ -53,7 +58,6 @@ class Templates:
 
         Returns the created template row (with the node's authoritative metadata).
         """
-        from pathlib import Path
         p = Path(path)
         grant = self._http.post(f"/nodes/{node}/templates/import/begin",
                                 json={"name": name, "provider": provider,
@@ -118,6 +122,23 @@ class Nodes:
     def list(self) -> List[dict[str, Any]]:
         """List placeable nodes."""
         return self._http.get("/nodes")
+
+    # -- kernel store (modular kernels: boot a custom kernel, or pull vmlinux for gdb) --
+    def kernels(self, node: str) -> List[KernelFile]:
+        """List ``node``'s kernel/ramdisk/vmlinux files. Each ``{name, size}`` —
+        a ``name`` is usable as ``kernel=``/``ramdisk=`` at create."""
+        return (self._http.get(f"/kernels/{node}") or {}).get("kernels", [])
+
+    def upload_kernel(self, node: str, path: str | Path) -> KernelFile:
+        """Upload a local kernel/ramdisk/vmlinux file to ``node``'s store
+        (admin-gated). Returns the stored ``{name, size}``."""
+        return self._http.post_files(f"/kernels/{node}", files=[("file", Path(path))])
+
+    def download_kernel(self, node: str, name: str, dest: str | Path,
+                        *, timeout: float = 3600.0) -> int:
+        """Download kernel file ``name`` from ``node`` to ``dest`` (e.g. a
+        ``vmlinux`` for local gdb). Returns the number of bytes written."""
+        return self._http.stream_to_file(f"/kernels/{node}/{name}", Path(dest), timeout=timeout)
 
     def create(self, **cfg: Any) -> dict[str, Any]:
         """Enroll a node (``name``, ``agent_url``, ``agent_token``)."""

@@ -24,6 +24,8 @@ const cases: Array<[string, (o: Orchard) => Promise<unknown>, string, string]> =
   ["sandbox.start", (o) => o.sandboxes.get(UUID).start(), "POST", `/api/sandboxes/${UUID}/start`],
   ["sandbox.get", (o) => o.sandboxes.get(UUID).get(), "GET", `/api/sandboxes/${UUID}`],
   ["sandbox.tag", (o) => o.sandboxes.get(UUID).tag("t", "#112233"), "PATCH", `/api/sandboxes/${UUID}`],
+  ["sandbox.setKernelParams", (o) => o.sandboxes.get(UUID).setKernelParams("nokaslr"), "POST", `/api/sandboxes/${UUID}/kernel`],
+  ["nodes.kernels", (o) => o.nodes.kernels("n1"), "GET", "/api/kernels/n1"],
   ["apps.uninstall", (o) => o.sandboxes.get(UUID).apps.uninstall("com.x"), "POST", `/api/sandboxes/${UUID}/apps/uninstall`],
   ["snapshots.restore", (o) => o.sandboxes.get(UUID).snapshots.restore("s1"), "POST", `/api/sandboxes/${UUID}/snapshots/s1`],
   ["keys.list", (o) => o.keys.list(), "GET", "/api/tokens"],
@@ -96,4 +98,9 @@ describe("input bodies", () => {
     .toEqual({ action: "inject", script: "console.log(1)", process: "com.x", timeout: 10 }));
   it("debugger.start", async () => expect(await body((o) => o.sandboxes.get(UUID).debugger.start("com.x")))
     .toEqual({ action: "start", process: "com.x" }));
+  it("setKernelParams", async () => expect(await body((o) => o.sandboxes.get(UUID).setKernelParams("nokaslr")))
+    .toEqual({ params: "nokaslr" }));
+  it("create merges kernel options", async () => expect(await body((o) =>
+    o.sandboxes.create({ platform: "android", name: "x" }, { rooted: true, kernel: "ksu-6.1" })))
+    .toEqual({ platform: "android", name: "x", rooted: true, kernel: "ksu-6.1" }));
 });

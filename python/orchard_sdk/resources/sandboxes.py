@@ -10,7 +10,7 @@ from .._bridge import LocalBridge
 from .._channels import SyncChannel, Tunnel
 from .._http import HttpClient
 from ..config import Config
-from ..models import Instance, InstanceList, RecordingRow, SnapshotRow
+from ..models import Instance, InstanceList, KernelOptions, RecordingRow, SnapshotRow
 from ..selector import resolve, resolve_all
 
 
@@ -29,11 +29,17 @@ class Sandboxes:
         """
         return self._http.get("/instances")
 
-    def create(self, **spec: Any) -> dict[str, Any]:
+    def create(self, *, kernel_options: KernelOptions | None = None,
+               **spec: Any) -> dict[str, Any]:
         """Create a sandbox. ``spec`` includes ``platform`` ("ios"/"android"),
         ``name``, ``cpu``, ``memory_mb``, and platform fields (``image``/``device``
-        for Android, ``preset``/``variant`` for iOS)."""
-        return self._http.post("/instances/create", json=spec)
+        for Android, ``preset``/``variant`` for iOS).
+
+        ``kernel_options`` is a typed :class:`~orchard_sdk.models.KernelOptions`
+        bag of Android kernel-modularity fields (``rooted``, ``kernel``,
+        ``kernel_cmdline``, ``kernel_gdb``, …) merged into the create body; the
+        same keys may still be passed inline via ``spec``."""
+        return self._http.post("/instances/create", json={**spec, **(kernel_options or {})})
 
     def create_sim(self, **spec: Any) -> dict[str, Any]:
         """Create an iOS simulator sandbox (``name``, ``device_type``, ``runtime``)."""
@@ -102,6 +108,11 @@ class Sandbox:
         if color is not None:
             body["tag_color"] = color
         return self._http.patch(self._base, json=body)
+
+    def set_kernel_params(self, params: str) -> dict[str, Any]:
+        """Set extra guest-kernel command-line ``params`` (stored on the sandbox,
+        applied on the next boot — reboot to pick them up)."""
+        return self._http.post(f"{self._base}/kernel", json={"params": params})
 
     # -- input / inspection ----------------------------------------------
     def control(self, action: str, **kw: Any) -> dict[str, Any]:

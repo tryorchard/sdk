@@ -86,6 +86,30 @@ class InstanceList(TypedDict):
     errors: list[dict[str, Any]]
 
 
+class KernelOptions(TypedDict, total=False):
+    """Android kernel-modularity options for :meth:`Sandboxes.create` /
+    :meth:`Templates.launch`. All optional; they serialize into the create body.
+
+    ``kernel``/``ramdisk`` name files in the node kernel store (see
+    :class:`Nodes`); ``kernel_cmdline`` is extra boot cmdline; ``boot_props`` are
+    guest ``ro.*``/``persist.*`` props; ``kernel_gdb`` boots with a halted gdb
+    stub (bridge with :meth:`Sandbox.gdb_bridge`)."""
+    rooted: bool
+    kernel_gdb: bool
+    kernel: str
+    ramdisk: str
+    kernel_cmdline: str
+    boot_props: dict[str, str]
+    device_profile: str
+    isolated: bool
+
+
+class KernelFile(TypedDict):
+    """A kernel/ramdisk/vmlinux file in a node's kernel store."""
+    name: str
+    size: int
+
+
 class SnapshotRow(TypedDict, total=False):
     id: int
     uuid: str

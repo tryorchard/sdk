@@ -21,6 +21,8 @@ export type {
   Instance,
   InstanceList,
   Job,
+  KernelFile,
+  KernelOptions,
   LogLine,
   Platform,
   Provider,

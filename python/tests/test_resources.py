@@ -29,6 +29,9 @@ def _run(call):
     (lambda o: o.sandboxes.get(UUID).stop(), "POST", f"/api/sandboxes/{UUID}/stop"),
     (lambda o: o.sandboxes.get(UUID).get(), "GET", f"/api/sandboxes/{UUID}"),
     (lambda o: o.sandboxes.get(UUID).tag("t", "#112233"), "PATCH", f"/api/sandboxes/{UUID}"),
+    (lambda o: o.sandboxes.get(UUID).set_kernel_params("nokaslr"), "POST", f"/api/sandboxes/{UUID}/kernel"),
+    (lambda o: o.nodes.kernels("n1"), "GET", "/api/kernels/n1"),
+    (lambda o: o.nodes.download_kernel("n1", "vmlinux", "/dev/null"), "GET", "/api/kernels/n1/vmlinux"),
     (lambda o: o.sandboxes.get(UUID).apps.uninstall("com.x"), "POST", f"/api/sandboxes/{UUID}/apps/uninstall"),
     (lambda o: o.sandboxes.get(UUID).snapshots.create("s1"), "POST", f"/api/sandboxes/{UUID}/snapshots"),
     (lambda o: o.sandboxes.get(UUID).snapshots.restore("s1"), "POST", f"/api/sandboxes/{UUID}/snapshots/s1"),
@@ -92,6 +95,13 @@ def test_wrapper_routes(call, method, path):
      '"action":"inject","script":"console.log(1)","process":"com.x","timeout":10'),
     (lambda o: o.sandboxes.get(UUID).debugger.start("com.x"),
      '"action":"start","process":"com.x"'),
+    (lambda o: o.sandboxes.get(UUID).set_kernel_params("nokaslr console=ttyS0"),
+     '"params":"nokaslr console=ttyS0"'),
+    # kernel_options is a typed bag that merges into the create body
+    (lambda o: o.sandboxes.create(platform="android", name="x",
+                                  kernel_options={"rooted": True, "kernel": "ksu-6.1",
+                                                  "kernel_cmdline": "nokaslr"}),
+     '"rooted":true,"kernel":"ksu-6.1","kernel_cmdline":"nokaslr"'),
 ])
 def test_input_bodies(call, needle):
     assert needle in _run(call)["body"]

@@ -2,8 +2,10 @@
  * team, workspaces, remote. @packageDocumentation */
 import type { ResolvedConfig } from "../config.js";
 import type { Http } from "../http.js";
-import type { ApiKey, Job, SnapshotRow } from "../models.js";
+import type { ApiKey, Job, KernelFile, KernelOptions, SnapshotRow } from "../models.js";
 import { Channel, decodeText, rawChannelUrl } from "../ws.js";
+
+import type { Uploadable } from "./sandboxes.js";
 
 export { Sandboxes, Sandbox, Files, Apps, Frida, Debugger, SandboxSnapshots } from "./sandboxes.js";
 
@@ -59,8 +61,11 @@ export class Templates {
   delete(pk: number): Promise<unknown> {
     return this.http.del(`/templates/${pk}`);
   }
-  launch(pk: number, name: string, spec: Record<string, unknown> = {}): Promise<unknown> {
-    return this.http.post(`/templates/${pk}/launch`, { name, ...spec });
+  /** Launch a new sandbox from a template. `kernel` is a typed {@link KernelOptions}
+   * bag of Android kernel-modularity fields merged into the launch body. */
+  launch(pk: number, name: string, spec: Record<string, unknown> = {},
+         kernel?: KernelOptions): Promise<unknown> {
+    return this.http.post(`/templates/${pk}/launch`, { name, ...spec, ...kernel });
   }
 
   /** Import a portable AVD profile `.tar` (from {@link Sandbox.exportAvd}) onto `node`
@@ -126,6 +131,28 @@ export class Nodes {
   constructor(private readonly http: Http) {}
   list(): Promise<unknown[]> {
     return this.http.get<unknown[]>("/nodes");
+  }
+
+  // -- kernel store (modular kernels: boot a custom kernel, or pull vmlinux for gdb) --
+  /** List `node`'s kernel/ramdisk/vmlinux files (each `{name, size}`); a `name`
+   * is usable as `kernel`/`ramdisk` in {@link KernelOptions} at create. */
+  async kernels(node: string): Promise<KernelFile[]> {
+    return (await this.http.get<{ kernels?: KernelFile[] }>(`/kernels/${node}`)).kernels ?? [];
+  }
+
+  /** Upload a kernel/ramdisk/vmlinux file to `node`'s store (admin-gated). Give a
+   * Node `Blob` a `name`. Resolves to the stored `{name, size}`. */
+  uploadKernel(node: string, file: Uploadable): Promise<KernelFile> {
+    const form = new FormData();
+    form.append("file", file, file.name ?? "kernel.bin");
+    return this.http.postForm<KernelFile>(`/kernels/${node}`, form);
+  }
+
+  /** Download kernel file `name` from `node` straight to `destPath` on disk (Node
+   * only) — e.g. a `vmlinux` for local gdb. Resolves to the bytes written. */
+  downloadKernel(node: string, name: string, destPath: string,
+                 opts: { timeoutMs?: number } = {}): Promise<number> {
+    return this.http.streamToFile(`/kernels/${node}/${name}`, destPath, opts.timeoutMs);
   }
   create(cfg: Record<string, unknown>): Promise<unknown> {
     return this.http.post("/nodes", cfg);
