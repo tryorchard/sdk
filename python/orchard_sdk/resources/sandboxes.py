@@ -459,6 +459,17 @@ class Debugger:
         """Start lldb-server, optionally attaching it to ``process``."""
         return self._http.post(self._base, json={"action": "start", "process": process})
 
+    def gdb_attach(self, process: str) -> dict[str, Any]:
+        """Attach a gdbserver to ``process`` for **gdb/pwndbg** (needs root + the app
+        running). Returns the forwarded ``port``/``pid``; then open the tunnel with
+        ``sandbox.gdb()`` and ``target remote`` it from gdb/pwndbg. Unlike lldb-server's
+        gdb mode, this stub is gdb-compatible."""
+        return self._http.post(self._base, json={"action": "gdb", "process": process})
+
+    def gdb_detach(self) -> dict[str, Any]:
+        """Stop the on-device gdbserver started by :meth:`gdb_attach` (app resumes)."""
+        return self._http.post(self._base, json={"action": "gdb-detach"})
+
     def console(self, process: str | None = None) -> SyncChannel:
         """An interactive lldb console stream (send commands with ``.send()``).
 

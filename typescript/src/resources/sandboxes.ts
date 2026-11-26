@@ -510,6 +510,18 @@ export class Debugger {
     return this.http.post(this.base, { action: "start", process });
   }
 
+  /** Attach a gdbserver to an app `process` for gdb/pwndbg (needs root + the app
+   * running). Returns the forwarded port/pid; then open the tunnel with the gdb
+   * bridge and `target remote` it. Unlike lldb-server's gdb mode, it is gdb-compatible. */
+  gdbAttach(process: string): Promise<unknown> {
+    return this.http.post(this.base, { action: "gdb", process });
+  }
+
+  /** Stop the on-device gdbserver started by {@link gdbAttach} (the app resumes). */
+  gdbDetach(): Promise<unknown> {
+    return this.http.post(this.base, { action: "gdb-detach" });
+  }
+
   /** Interactive lldb console stream (send commands with `.send()`). */
   console(process?: string): Channel<string> {
     return new Channel(
