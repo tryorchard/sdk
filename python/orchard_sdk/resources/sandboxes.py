@@ -281,9 +281,12 @@ class Sandbox:
         """The mitmproxy CA certificate (PEM bytes)."""
         return self._http.get_content(f"{self._base}/mitm/ca")
 
-    def tunnel(self, to_host: str, to_port: int) -> Tunnel:
-        """A reverse tunnel forwarding guest proxy traffic into ``to_host:to_port``."""
-        return Tunnel(self._cfg, self.uuid, to_host, to_port)
+    def tunnel(self, to_host: str, to_port: int, reverse_port: int | None = None) -> Tunnel:
+        """A reverse tunnel from the device into ``to_host:to_port``. By default it
+        forwards the guest's proxy traffic; pass ``reverse_port`` to instead expose
+        your ``to_host:to_port`` on the device's ``127.0.0.1:<reverse_port>`` (a raw
+        port reverse via adb reverse, Android only)."""
+        return Tunnel(self._cfg, self.uuid, to_host, to_port, reverse_port=reverse_port)
 
     # -- local bridges (expose a device channel on a local TCP port) ------
     def adb_bridge(self, host: str = "127.0.0.1", port: int = 0) -> "LocalBridge":
@@ -307,6 +310,15 @@ class Sandbox:
         Cuttlefish debug sandboxes, Android emulators and iOS VMs launched with
         kernel debugging (capability ``kernel-debug``)."""
         return LocalBridge(self._cfg, self.uuid, "gdb", host, port)
+
+    def forward_bridge(self, device_port: int, host: str = "127.0.0.1",
+                       port: int = 0) -> "LocalBridge":
+        """A local listener forwarding to the device's ``127.0.0.1:<device_port>``.
+        Start it, then connect to ``<host>:<port>`` to reach that device port - e.g.
+        a service the app listens on. ``port`` 0 lets the OS pick the local port."""
+        b = LocalBridge(self._cfg, self.uuid, "forward", host, port)
+        b._url += ("&" if "?" in b._url else "?") + f"port={int(device_port)}"
+        return b
 
 
 class Files:

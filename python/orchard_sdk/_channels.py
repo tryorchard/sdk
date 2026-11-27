@@ -122,10 +122,12 @@ class Tunnel:
     local proxy you run (Burp/mitmproxy). Context-managed; blocks in :meth:`run`.
     """
 
-    def __init__(self, cfg: Config, uuid: str, to_host: str, to_port: int):
+    def __init__(self, cfg: Config, uuid: str, to_host: str, to_port: int,
+                 reverse_port: int | None = None):
         self._cfg = cfg
         self._uuid = uuid
         self._to = (to_host, to_port)
+        self._reverse_port = reverse_port
 
     def run(self, on_event: Callable[[str, str], None] | None = None) -> int:
         """Hold the tunnel open until the server closes it. ``on_event(level, text)``
@@ -145,7 +147,8 @@ class Tunnel:
             except Exception as e:
                 log("warn", f"stream {sid[:8]} ended: {e}")
 
-        async with _ws.connect(_ws.ws_url(self._cfg, self._uuid, "tunnel")) as control:
+        async with _ws.connect(_ws.ws_url(self._cfg, self._uuid, "tunnel",
+                                           reverse_port=self._reverse_port)) as control:
             async for raw in control:
                 try:
                     msg = json.loads(raw)
